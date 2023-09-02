@@ -78,11 +78,13 @@ def fetch_product_links(url):
 
 
 def fetch_and_save_images(url):
-    response = requests.get(url)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"}
+
+    response = requests.get(url, headers=headers)
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
 
-        # Find all elements with the class and then filter by title attribute
         parent_candidates = soup.find_all(class_='yupoo-crumbs-span is-link')
         parent_folder = None
         for candidate in parent_candidates:
@@ -94,16 +96,19 @@ def fetch_and_save_images(url):
         img_elements = soup.find_all('img', attrs={'data-origin-src': True})
 
         if parent_folder and child_folder and img_elements:
-            # Create folders, adding 'img' as the root directory
             os.makedirs(os.path.join('img', parent_folder, child_folder), exist_ok=True)
 
             for img in img_elements:
                 img_url = 'http:' + img['data-origin-src']
                 img_name = os.path.basename(img_url)
-
-                # Save images in the created folders under the root directory 'img'
                 img_path = os.path.join('img', parent_folder, child_folder, img_name)
-                urlretrieve(img_url, img_path)
+
+                # Downloading image using requests with User-Agent
+                headers["Referer"] = url
+                img_response = requests.get(img_url, headers=headers)
+                if img_response.status_code == 200:
+                    with open(img_path, 'wb') as f:
+                        f.write(img_response.content)
 
 
 # Replace 'your_url_here' with the URL you want to fetch content from
