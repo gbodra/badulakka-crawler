@@ -95,13 +95,20 @@ def fetch_and_save_images(url):
         child_folder = soup.find(class_='showalbumheader__gallerytitle').text
         img_elements = soup.find_all('img', attrs={'data-origin-src': True})
 
+        target_folder_path = os.path.join('img', parent_folder, child_folder)
+
+        # Check if child folder already exists
+        if os.path.exists(target_folder_path):
+            print(f"Skipping download for existing folder: {target_folder_path}")
+            return
+
         if parent_folder and child_folder and img_elements:
-            os.makedirs(os.path.join('img', parent_folder, child_folder), exist_ok=True)
+            os.makedirs(target_folder_path, exist_ok=True)
 
             for img in img_elements:
                 img_url = 'http:' + img['data-origin-src']
                 img_name = os.path.basename(img_url)
-                img_path = os.path.join('img', parent_folder, child_folder, img_name)
+                img_path = os.path.join(target_folder_path, img_name)
 
                 # Downloading image using requests with User-Agent
                 headers["Referer"] = url
