@@ -4,7 +4,7 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 
 # Constants
-USER_AGENT = {
+HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
 }
 
@@ -79,7 +79,7 @@ def fetch_product_links(url):
 
 
 def fetch_and_save_images(url):
-    soup = get_soup(url, headers=USER_AGENT)
+    soup = get_soup(url, headers=HEADERS)
     if not soup:
         return
 
@@ -102,7 +102,8 @@ def fetch_and_save_images(url):
             img_name = os.path.basename(img_url)
             img_path = os.path.join(target_folder_path, img_name)
             try:
-                img_response = requests.get(img_url, headers=USER_AGENT)
+                HEADERS["Referer"] = url
+                img_response = requests.get(img_url, headers=HEADERS)
                 img_response.raise_for_status()
                 with open(img_path, 'wb') as f:
                     f.write(img_response.content)
